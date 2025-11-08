@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polygon Visualizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Polygon Visualizer</h1>
+      <p>Drag the red point to see the closest point on the polygon boundary</p>
+    </header>
+    
+    <div class="controls">
+      <label for="polygon-select">Select Polygon:</label>
+      <select id="polygon-select">
+        <option value="square">Square</option>
+        <option value="lshape">Concave L-Shape</option>
+        <option value="triangle">Triangle</option>
+        <option value="pentagon">Pentagon</option>
+        <option value="star">Concave Star</option>
+        <option value="complex">Complex Concave</option>
+      </select>
+      
+      <button id="reset-btn">Reset Position</button>
+    </div>
+    
+    <div class="canvas-container">
+      <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+    
+    <div class="info">
+      <div class="info-section">
+        <h3>Legend:</h3>
+        <ul>
+          <li><span class="color-box polygon"></span> Polygon boundary</li>
+          <li><span class="color-box test-point"></span> Test point (draggable)</li>
+          <li><span class="color-box closest-point"></span> Closest point on polygon</li>
+          <li><span class="color-box connection"></span> Distance line</li>
+        </ul>
+      </div>
+      
+      <div class="info-section">
+        <h3>Status:</h3>
+        <p id="status-text">Point is outside polygon</p>
+        <p id="distance-text">Distance: 0.0</p>
+      </div>
+      
+      <div class="info-section">
+        <h3>Algorithm Details:</h3>
+        <ul>
+          <li>Uses winding number for point-in-polygon test</li>
+          <li>O(n) time complexity</li>
+          <li>Handles concave and convex polygons</li>
+          <li>Numerically stable with epsilon comparisons</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <script src="dist/bundle.js"></script>
+</body>
+</html>
+
