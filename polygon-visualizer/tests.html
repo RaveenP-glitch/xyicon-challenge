@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithm Tests - Polygon Visualizer</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+    
+    h2 {
+      color: #555;
+      margin-top: 30px;
+    }
+    
+    .test-case {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .test-case h3 {
+      color: #667eea;
+      margin-top: 0;
+    }
+    
+    .result {
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    
+    .summary {
+      background: #667eea;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Polygon Visualizer - Algorithm Tests</h1>
+  <p>Testing the <code>closestPointInPolygon</code> function with various edge cases.</p>
+  
+  <div id="test-results"></div>
+  
+  <div class="summary" id="summary"></div>
+  
+  <script type="module">
+    // Import the algorithm (we'll use a simplified inline version for testing)
+    
+    const EPSILON = 1e-10;
+    
+    function distanceSquared(p1, p2) {
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      return dx * dx + dy * dy;
+    }
+    
+    function closestPointOnSegment(a, b, p) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      
+      const lengthSquared = dx * dx + dy * dy;
+      if (lengthSquared < EPSILON) {
+        return { x: a.x, y: a.y };
+      }
+      
+      const t = Math.max(0, Math.min(1, 
+        ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSquared
+      ));
+      
+      return {
+        x: a.x + t * dx,
+        y: a.y + t * dy
+      };
+    }
+    
+    function isPointInPolygon(poly, p) {
+      const n = poly.length;
+      if (n < 3) return false;
+      
+      let windingNumber = 0;
+      
+      for (let i = 0; i < n; i++) {
+        const a = poly[i];
+        const b = poly[(i + 1) % n];
+        
+        const closest = closestPointOnSegment(a, b, p);
+        if (distanceSquared(closest, p) < EPSILON) {
+          return true;
+        }
+        
+        if (a.y <= p.y) {
+          if (b.y > p.y) {
+            if (isLeft(a, b, p) > 0) {
+              windingNumber++;
+            }
+          }
+        } else {
+          if (b.y <= p.y) {
+            if (isLeft(a, b, p) < 0) {
+              windingNumber--;
+            }
+          }
+        }
+      }
+      
+      return windingNumber !== 0;
+    }
+    
+    function isLeft(a, b, p) {
+      return (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
+    }
+    
+    function closestPointInPolygon(poly, pos) {
+      if (poly.length < 3) {
+        throw new Error("Polygon must have at least 3 vertices");
+      }
+      
+      if (isPointInPolygon(poly, pos)) {
+        return { x: pos.x, y: pos.y };
+      }
+      
+      let closestPoint = closestPointOnSegment(poly[0], poly[1], pos);
+      let minDistSquared = distanceSquared(closestPoint, pos);
+      
+      const n = poly.length;
+      for (let i = 1; i < n; i++) {
+        const a = poly[i];
+        const b = poly[(i + 1) % n];
+        
+        const candidate = closestPointOnSegment(a, b, pos);
+        const distSq = distanceSquared(candidate, pos);
+        
+        if (distSq < minDistSquared) {
+          minDistSquared = distSq;
+          closestPoint = candidate;
+        }
+      }
+      
+      return closestPoint;
+    }
+    
+    // Test cases
+    const tests = [];
+    
+    // Test 1: Point inside square
+    tests.push({
+      name: "Point inside square",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 5, y: 5 },
+      expectedResult: { x: 5, y: 5 },
+      description: "When point is inside, it should return the point itself"
+    });
+    
+    // Test 2: Point outside square
+    tests.push({
+      name: "Point outside square",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 15, y: 5 },
+      expectedResult: { x: 10, y: 5 },
+      description: "Should return closest point on right edge"
+    });
+    
+    // Test 3: Point on vertex
+    tests.push({
+      name: "Point on vertex",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 10, y: 10 },
+      expectedResult: { x: 10, y: 10 },
+      description: "Point exactly on vertex should return same point"
+    });
+    
+    // Test 4: Point on edge
+    tests.push({
+      name: "Point on edge",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 5, y: 0 },
+      expectedResult: { x: 5, y: 0 },
+      description: "Point on edge should return same point"
+    });
+    
+    // Test 5: Triangle with point outside
+    tests.push({
+      name: "Triangle test",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 5, y: 10 }
+      ],
+      testPoint: { x: 0, y: 10 },
+      expectedResult: { x: 3.5, y: 7 },
+      description: "Closest point on triangle edge",
+      tolerance: 0.5 // Allow some tolerance for this calculation
+    });
+    
+    // Test 6: Concave L-shape
+    tests.push({
+      name: "Concave L-shape",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 5 },
+        { x: 5, y: 5 },
+        { x: 5, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 7, y: 7 },
+      expectedResult: { x: 5, y: 7 },
+      description: "Point near inner corner of L-shape",
+      tolerance: 0.5
+    });
+    
+    // Test 7: Point near vertex
+    tests.push({
+      name: "Point near vertex",
+      polygon: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 }
+      ],
+      testPoint: { x: 12, y: 12 },
+      expectedResult: { x: 10, y: 10 },
+      description: "Point outside near corner should return corner vertex"
+    });
+    
+    // Run tests
+    function runTests() {
+      const resultsDiv = document.getElementById('test-results');
+      let passed = 0;
+      let failed = 0;
+      
+      tests.forEach((test, index) => {
+        const testDiv = document.createElement('div');
+        testDiv.className = 'test-case';
+        
+        try {
+          const result = closestPointInPolygon(test.polygon, test.testPoint);
+          const tolerance = test.tolerance || 0.1;
+          const distance = Math.sqrt(distanceSquared(result, test.expectedResult));
+          
+          const isPass = distance < tolerance;
+          
+          if (isPass) passed++;
+          else failed++;
+          
+          testDiv.innerHTML = `
+            <h3>Test ${index + 1}: ${test.name}</h3>
+            <p>${test.description}</p>
+            <div class="result info">
+              <strong>Test Point:</strong> (${test.testPoint.x}, ${test.testPoint.y})
+            </div>
+            <div class="result info">
+              <strong>Expected:</strong> (${test.expectedResult.x.toFixed(2)}, ${test.expectedResult.y.toFixed(2)})
+            </div>
+            <div class="result info">
+              <strong>Got:</strong> (${result.x.toFixed(2)}, ${result.y.toFixed(2)})
+            </div>
+            <div class="result ${isPass ? 'pass' : 'fail'}">
+              ${isPass ? '✓ PASSED' : '✗ FAILED'} - Distance from expected: ${distance.toFixed(4)}
+            </div>
+          `;
+        } catch (error) {
+          failed++;
+          testDiv.innerHTML = `
+            <h3>Test ${index + 1}: ${test.name}</h3>
+            <p>${test.description}</p>
+            <div class="result fail">
+              ✗ ERROR: ${error.message}
+            </div>
+          `;
+        }
+        
+        resultsDiv.appendChild(testDiv);
+      });
+      
+      const summaryDiv = document.getElementById('summary');
+      summaryDiv.innerHTML = `
+        <strong>Test Results:</strong> ${passed} passed, ${failed} failed out of ${tests.length} total tests
+        ${failed === 0 ? '<br>🎉 All tests passed!' : ''}
+      `;
+      summaryDiv.className = `summary ${failed === 0 ? '' : 'fail'}`;
+    }
+    
+    runTests();
+  </script>
+</body>
+</html>
+
