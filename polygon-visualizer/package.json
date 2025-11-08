@@ -1,0 +1,28 @@
+{
+  "name": "polygon-visualizer",
+  "version": "1.0.0",
+  "description": "A polygon visualizer that finds the closest point on a polygon boundary to a given test point",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "serve": "python3 -m http.server 8000",
+    "start": "npm run build && npm run serve"
+  },
+  "keywords": [
+    "polygon",
+    "computational-geometry",
+    "canvas",
+    "typescript",
+    "algorithm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
+
